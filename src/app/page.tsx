@@ -1,11 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, X, Plus, 
-  Settings2, LogOut, ChevronLeft, 
-  Leaf, Flame, Clock
-} from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { 
   collection, onSnapshot, query, 
@@ -13,385 +8,32 @@ import {
   serverTimestamp, orderBy 
 } from 'firebase/firestore';
 
-const DEMO_DATA = [
-  // Yiros ($18.90)
-  { name: "Chicken Yiros", category: "Yiros", price: 18.90, ingredients: "Freshly marinated chicken, tzatziki sauce, tomato, onion, crunchy chips in grilled pita.", calories: 750, prepTime: "5m", isDeal: false, isVegetarian: false },
-  { name: "Lamb Yiros", category: "Yiros", price: 18.90, ingredients: "Freshly marinated lamb, tzatziki sauce, tomato, onion, crunchy chips in grilled pita.", calories: 820, prepTime: "7m", isDeal: false, isVegetarian: false },
-  { name: "Mix Yiros", category: "Yiros", price: 18.90, ingredients: "Chicken & lamb combo, tzatziki sauce, tomato, onion, crunchy chips in grilled pita.", calories: 890, prepTime: "8m", isDeal: false, isVegetarian: false },
-  { name: "Grilled Haloumi Yiros", category: "Yiros", price: 18.90, ingredients: "Grilled haloumi, tzatziki, tomato, onion, crunchy chips in grilled pita.", calories: 680, prepTime: "5m", isDeal: false, isVegetarian: true },
-  { name: "Falafel Fritters Yiros", category: "Yiros", price: 18.90, ingredients: "Handmade falafel, tzatziki, tomato, onion, crunchy chips in grilled pita.", calories: 650, prepTime: "6m", isDeal: false, isVegetarian: true },
-  
-  // Snack Packs ($19.90)
-  { name: "Snack Pack", category: "Snack Pack", price: 19.90, ingredients: "Roasted meats served over hot chips with melted cheese.", calories: 950, prepTime: "6m", isDeal: false, isVegetarian: false },
-  { name: "Meaty Pack", category: "Snack Pack", price: 19.90, ingredients: "Roasted meats, chips, fresh salad, selection of dips, and warm pita bread.", calories: 1100, prepTime: "8m", isDeal: false, isVegetarian: false },
-  { name: "Low Carb Pack", category: "Snack Pack", price: 19.90, ingredients: "Roasted meats served with fresh salad, dips, and warm pita (no chips).", calories: 720, prepTime: "7m", isDeal: false, isVegetarian: false },
-  { name: "Falafel Pack", category: "Snack Pack", price: 19.90, ingredients: "Handmade falafel served with chips, fresh salad, and dips.", calories: 810, prepTime: "7m", isDeal: false, isVegetarian: true },
-  { name: "Rice Bowl", category: "Snack Pack", price: 19.90, ingredients: "Fragrant Turkish rice topped with roasted meats, fresh salads, and pita.", calories: 850, prepTime: "7m", isDeal: false, isVegetarian: false },
-  { name: "Vegan Bowl", category: "Snack Pack", price: 19.90, ingredients: "Turkish rice, fresh garden salads, and house dressing.", calories: 520, prepTime: "5m", isDeal: false, isVegetarian: true },
-  { name: "Salad Box", category: "Snack Pack", price: 19.90, ingredients: "Fresh salads, grilled haloumi, dips, and warm pita bread.", calories: 580, prepTime: "6m", isDeal: false, isVegetarian: true },
-
-  // Pizzas (Slice: $7.90, Whole: $28.00)
-  { name: "Meat Combo Pizza", category: "Pizza", price: 28.00, ingredients: "Lamb, chicken, capsicum, and onion. (Slice: $7.90)", calories: 1200, prepTime: "12m", isDeal: false, isVegetarian: false },
-  { name: "Chargrill Chicken Pizza", category: "Pizza", price: 28.00, ingredients: "Grilled chicken, capsicum, mushroom, and onion. (Slice: $7.90)", calories: 1100, prepTime: "12m", isDeal: false, isVegetarian: false },
-  { name: "BBQ Chicken Pizza", category: "Pizza", price: 28.00, ingredients: "Chicken, pineapple, capsicum, and BBQ sauce. (Slice: $7.90)", calories: 1150, prepTime: "12m", isDeal: false, isVegetarian: false },
-  { name: "Hawaiian Pizza", category: "Pizza", price: 28.00, ingredients: "Chicken, onion, pineapple, and capsicum. (Slice: $7.90)", calories: 1080, prepTime: "12m", isDeal: false, isVegetarian: false },
-  { name: "Lamb Pizza", category: "Pizza", price: 28.00, ingredients: "Marinated lamb, capsicum, onion, and fresh garlic. (Slice: $7.90)", calories: 1180, prepTime: "12m", isDeal: false, isVegetarian: false },
-  { name: "Salami Pizza", category: "Pizza", price: 28.00, ingredients: "Salami, capsicum, and olives. (Slice: $7.90)", calories: 1120, prepTime: "12m", isDeal: false, isVegetarian: false },
-  { name: "Margherita Pizza", category: "Pizza", price: 28.00, ingredients: "Garlic, tomato, fresh basil, and olive oil. (Slice: $7.90)", calories: 950, prepTime: "10m", isDeal: false, isVegetarian: true },
-  { name: "Vegetarian Pizza", category: "Pizza", price: 28.00, ingredients: "Spinach, mushroom, capsicum, and feta cheese. (Slice: $7.90)", calories: 980, prepTime: "12m", isDeal: false, isVegetarian: true },
-
-  // Sauces ($0.30)
-  { name: "Tzatziki (Yoghurt Garlic)", category: "Sauces", price: 0.30, ingredients: "Traditional Greek garlic dip.", calories: 80, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "BBQ Sauce", category: "Sauces", price: 0.30, ingredients: "Sweet and smoky BBQ sauce.", calories: 60, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Tomato Sauce", category: "Sauces", price: 0.30, ingredients: "Classic tomato ketchup.", calories: 45, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Sour Cream", category: "Sauces", price: 0.30, ingredients: "Smooth and creamy sour cream.", calories: 110, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Hummus", category: "Sauces", price: 0.30, ingredients: "Classic chickpea dip.", calories: 95, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Mayonnaise", category: "Sauces", price: 0.30, ingredients: "Rich and creamy mayo.", calories: 120, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Sweet Chilli", category: "Sauces", price: 0.30, ingredients: "Zesty sweet chilli sauce.", calories: 70, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Hot Chilli", category: "Sauces", price: 0.30, ingredients: "Spicy hot chilli sauce.", calories: 65, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Beetroot Hummus", category: "Sauces", price: 0.30, ingredients: "Beetroot infused chickpea dip.", calories: 90, prepTime: "Ready", isDeal: false, isVegetarian: true },
-
-  // Extras (Toppings)
-  { name: "Cheese Extra", category: "Extras", price: 2.00, ingredients: "Additional portion of melted cheese.", calories: 150, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Olives Extra", category: "Extras", price: 1.50, ingredients: "Portion of sliced Kalamata olives.", calories: 45, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Jalapenos Extra", category: "Extras", price: 1.50, ingredients: "Portion of spicy jalapenos.", calories: 15, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Pineapple Extra", category: "Extras", price: 1.50, ingredients: "Portion of sweet pineapple chunks.", calories: 60, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Mushrooms Extra", category: "Extras", price: 1.50, ingredients: "Portion of grilled mushrooms.", calories: 30, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Halloumi Extra", category: "Extras", price: 3.00, ingredients: "Two additional slices of grilled halloumi.", calories: 180, prepTime: "Ready", isDeal: false, isVegetarian: true },
-
-  // Deals
-  { name: "Small Meal Deal", category: "Deals", price: 7.90, ingredients: "Can of Soft Drink or Water + Small Chips.", calories: 450, prepTime: "2m", isDeal: true, isVegetarian: false },
-  { name: "Large Meal Deal", category: "Deals", price: 9.90, ingredients: "Bottle of Soft Drink or Water + Large Chips.", calories: 650, prepTime: "2m", isDeal: true, isVegetarian: false },
-];
-
-const CATEGORIES = ['All', 'Yiros', 'Snack Pack', 'Pizza', 'Sauces', 'Extras', 'Deals'];
-
-// --- Sub-Components (Moved outside to fix focus bug) ---
-
-const MenuCustomerView = ({ items, loading, searchQuery, setSearchQuery, activeCategory, setActiveCategory, setView }: any) => {
-  const filteredItems = items.filter((item: any) => {
-    const matchesCat = activeCategory === 'All' || item.category === activeCategory;
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          item.ingredients.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCat && matchesSearch;
-  });
-
-  return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#2C3E50] font-sans selection:bg-[#004B87] selection:text-white">
-      <header className="relative pt-16 pb-10 px-6 text-center max-w-2xl mx-auto">
-        <button onClick={() => setView('admin-login')} className="absolute top-6 right-6 text-slate-300 hover:text-slate-500 transition-colors">
-          <Settings2 className="w-5 h-5" />
-        </button>
-        <div className="flex justify-center mb-6 opacity-80">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#004B87" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-            <path d="M12 16v-4"></path>
-            <path d="M12 8h.01"></path>
-          </svg>
-        </div>
-        <h1 className="text-4xl md:text-5xl font-serif text-[#004B87] tracking-tight mb-3">Ozi Yiros</h1>
-        <p className="text-slate-500 font-light tracking-wide text-sm md:text-base mb-8">Brisbane's Authentic Greek Street Food</p>
-        <div className="relative max-w-md mx-auto">
-          <div className="flex items-center border-b border-slate-300 pb-2 px-1 focus-within:border-[#004B87] transition-colors">
-            <Search className="w-4 h-4 text-slate-400 mr-2" />
-            <input 
-              type="text" 
-              placeholder="Search our menu..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent text-slate-700 placeholder-slate-400 focus:outline-none font-light"
-            />
-            {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="text-slate-400 hover:text-slate-600">
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <div className="sticky top-0 bg-[#FDFBF7]/90 backdrop-blur-md z-30 py-4 border-b border-slate-200/50">
-        <div className="flex overflow-x-auto hide-scrollbar px-4 md:px-8 gap-4 max-w-4xl mx-auto items-center justify-start sm:justify-center">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-medium transition-all ${
-                activeCategory === cat 
-                  ? 'bg-[#004B87] text-white shadow-md' 
-                  : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <main className="px-6 py-10 max-w-3xl mx-auto min-h-[50vh]">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-4">
-            <div className="w-6 h-6 border-2 border-[#004B87] border-t-transparent rounded-full animate-spin"></div>
-            <p className="font-light">Preparing menu...</p>
-          </div>
-        ) : filteredItems.length === 0 ? (
-          <div className="py-20 text-center text-slate-500 font-light">No items found matching your taste.</div>
-        ) : (
-          <div className="space-y-10">
-            {filteredItems.map((item: any) => (
-              <article key={item.id} className="group">
-                <div className="flex w-full items-baseline gap-3 mb-2">
-                  <h3 className="font-serif text-xl md:text-2xl text-slate-800 font-medium tracking-tight">{item.name}</h3>
-                  <div className="flex-grow border-b-2 border-dotted border-slate-300 opacity-60"></div>
-                  <span className="font-serif text-lg md:text-xl text-[#004B87]">${Number(item.price).toFixed(2)}</span>
-                </div>
-                <p className="text-slate-500 text-sm md:text-base leading-relaxed mb-3 font-light pr-8">{item.ingredients}</p>
-                <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
-                  {item.isDeal && (
-                    <span className="flex items-center gap-1 text-[#C2410C] bg-[#FFF5F1] px-2 py-1 rounded">
-                      <Flame className="w-3 h-3" /> Special Deal
-                    </span>
-                  )}
-                  {item.isVegetarian && (
-                    <span className="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-1 rounded">
-                      <Leaf className="w-3 h-3" /> V
-                    </span>
-                  )}
-                  {item.calories && <span className="text-slate-400">{item.calories} cal</span>}
-                  {item.prepTime && <span className="text-slate-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {item.prepTime}</span>}
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </main>
-
-      <footer className="mt-12 py-12 bg-white border-t border-slate-100 text-center">
-        <div className="max-w-md mx-auto px-6">
-          <h4 className="font-serif text-xl text-[#004B87] mb-4">Ozi Yiros</h4>
-          <div className="text-slate-500 font-light text-sm space-y-2">
-            <p>355 Samsonvale Rd, Warner QLD 4500</p>
-            <p>Open Daily: 11:00 AM - 10:00 PM</p>
-            <p className="pt-4 text-slate-300 text-xs">&copy; {new Date().getFullYear()} Ozi Yiros.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-};
-
-const AdminLogin = ({ pin, setPin, handleLogin, authError, setView }: any) => (
-  <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-6 font-sans">
-    <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-sm border border-slate-100">
-      <button onClick={() => setView('menu')} className="mb-8 text-slate-400 hover:text-slate-600 transition flex items-center gap-1 text-sm font-medium">
-        <ChevronLeft className="w-4 h-4" /> Back to Menu
-      </button>
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-slate-800 mb-1">Store Access</h2>
-        <p className="text-slate-500 text-sm">Please enter the staff PIN to continue.</p>
-      </div>
-      <form onSubmit={handleLogin} className="space-y-6">
-        <div>
-          <input 
-            type="password" 
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            placeholder="Enter PIN"
-            className={`w-full bg-slate-50 border px-4 py-3 rounded-lg text-lg focus:outline-none transition-colors ${authError ? 'border-red-300 focus:border-red-500 text-red-600' : 'border-slate-200 focus:border-[#004B87]'}`}
-            autoFocus
-          />
-          {authError && <p className="text-red-500 text-xs mt-2">Incorrect PIN. Please try again.</p>}
-        </div>
-        <button type="submit" className="w-full bg-[#004B87] text-white font-medium py-3 rounded-lg hover:bg-[#003A69] transition-colors shadow-sm">
-          Access Dashboard
-        </button>
-      </form>
-    </div>
-  </div>
-);
-
-const AdminDashboard = ({ 
-  items, setView, setIsAdmin, editingId, setEditingId, 
-  deletingId, setDeletingId, formData, setFormData, 
-  handleSubmit, executeDelete 
-}: any) => {
-  const [seeding, setSeeding] = useState(false);
-
-  const handleSeed = async () => {
-    if (!db || seeding) return;
-    setSeeding(true);
-    try {
-      for (const item of DEMO_DATA) {
-        await addDoc(collection(db, "products"), {
-          ...item,
-          createdAt: serverTimestamp()
-        });
-        // Small delay to prevent burst issues
-        await new Promise(r => setTimeout(r, 200));
-      }
-      alert("Demo data loaded successfully!");
-    } catch (err) {
-      console.error(err);
-      alert("Error seeding data.");
-    } finally {
-      setSeeding(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#004B87] rounded flex items-center justify-center text-white font-serif font-bold">O</div>
-            <span className="font-semibold text-lg text-slate-800">Menu Manager</span>
-          </div>
-          <div className="flex items-center gap-6">
-            {items.length === 0 && (
-              <button 
-                onClick={handleSeed}
-                disabled={seeding}
-                className="text-xs font-medium bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-md border border-emerald-100 hover:bg-emerald-100 transition disabled:opacity-50"
-              >
-                {seeding ? 'Seeding...' : 'Seed Demo Data'}
-              </button>
-            )}
-            <button onClick={() => {setIsAdmin(false); setView('menu');}} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition">
-              Sign Out <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 mt-4">
-        <div className="lg:col-span-4">
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm sticky top-24">
-            <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
-              {editingId ? <span className="text-[#004B87]">Edit Item</span> : <span>Add New Item</span>}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Item Name *</label>
-                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#004B87] transition-all" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1">Category</label>
-                  <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#004B87] bg-white">
-                    {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1">Price ($) *</label>
-                  <input required type="number" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#004B87]" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1">Calories</label>
-                  <input type="text" value={formData.calories} onChange={e => setFormData({...formData, calories: e.target.value})} className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#004B87]" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1">Prep Time</label>
-                  <input type="text" value={formData.prepTime} onChange={e => setFormData({...formData, prepTime: e.target.value})} className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#004B87]" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Ingredients</label>
-                <textarea value={formData.ingredients} onChange={e => setFormData({...formData, ingredients: e.target.value})} rows={3} className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#004B87] resize-none"></textarea>
-              </div>
-              <div className="flex gap-4 pt-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={formData.isDeal} onChange={e => setFormData({...formData, isDeal: e.target.checked})} className="w-4 h-4 text-[#004B87] rounded border-slate-300"/>
-                  <span className="text-sm text-slate-700">Special Deal</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={formData.isVegetarian} onChange={e => setFormData({...formData, isVegetarian: e.target.checked})} className="w-4 h-4 text-emerald-600 rounded border-slate-300"/>
-                  <span className="text-sm text-slate-700">Vegetarian</span>
-                </label>
-              </div>
-              <div className="pt-4 flex gap-3">
-                <button type="submit" className="flex-1 bg-[#004B87] text-white py-2.5 rounded-md font-medium hover:bg-[#003A69] transition-colors shadow-sm">
-                  {editingId ? 'Save Changes' : 'Add Item'}
-                </button>
-                {editingId && (
-                  <button type="button" onClick={() => {setEditingId(null); setFormData({name: '', category: 'Yiros', price: '', ingredients: '', calories: '', prepTime: '', isDeal: false, isVegetarian: false})}} className="px-4 py-2.5 border border-slate-300 text-slate-700 rounded-md font-medium hover:bg-slate-50 transition-colors">
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <div className="lg:col-span-8">
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
-              <h3 className="font-semibold text-slate-800">Active Menu Items</h3>
-              <span className="text-xs font-medium text-slate-500 bg-slate-200 px-2 py-1 rounded-full">{items.length} Total</span>
-            </div>
-            <div className="divide-y divide-slate-100">
-              {items.map((item: any) => (
-                <div key={item.id} className="p-4 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-medium text-[#004B87] bg-blue-50 px-2 py-0.5 rounded">{item.category}</span>
-                      <h4 className="font-medium text-slate-800">{item.name}</h4>
-                      {item.isDeal && <Flame className="w-3.5 h-3.5 text-[#C2410C]" />}
-                      {item.isVegetarian && <Leaf className="w-3.5 h-3.5 text-emerald-600" />}
-                    </div>
-                    <p className="text-sm text-slate-500 line-clamp-1">{item.ingredients}</p>
-                  </div>
-                  <div className="flex items-center justify-between sm:justify-end gap-6 sm:w-48">
-                    <div className="text-sm font-medium text-slate-800">${Number(item.price).toFixed(2)}</div>
-                    <div className="flex items-center gap-2">
-                      {deletingId === item.id ? (
-                        <div className="flex items-center gap-2 bg-red-50 text-red-600 px-2 py-1 rounded text-xs font-medium">
-                          <span>Delete?</span>
-                          <button onClick={() => executeDelete(item.id)} className="hover:underline text-red-700">Yes</button>
-                          <button onClick={() => setDeletingId(null)} className="hover:underline">No</button>
-                        </div>
-                      ) : (
-                        <>
-                          <button onClick={() => {
-                            setEditingId(item.id);
-                            setFormData({...item, price: item.price.toString(), calories: item.calories?.toString() || ''});
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                          }} className="p-1.5 text-slate-400 hover:text-[#004B87] hover:bg-blue-50 rounded transition-colors"><Settings2 className="w-4 h-4" /></button>
-                          <button onClick={() => setDeletingId(item.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"><X className="w-4 h-4" /></button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
-};
-
-// --- Main App Component ---
+// Modular Components
+import MenuCustomerView from '@/components/MenuCustomerView';
+import AdminLogin from '@/components/AdminLogin';
+import AdminDashboard from '@/components/AdminDashboard';
 
 export default function App() {
+  // Global State
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('menu'); 
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   
+  // Auth State
   const [isAdmin, setIsAdmin] = useState(false);
   const [pin, setPin] = useState('');
   const [authError, setAuthError] = useState(false);
 
+  // Admin Form State
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '', category: 'Yiros', price: '', ingredients: '', calories: '', prepTime: '', isDeal: false, isVegetarian: false
   });
 
+  // Fetch Data from Firestore
   useEffect(() => {
     if (!db) return;
     setLoading(true);
@@ -401,12 +43,13 @@ export default function App() {
       setItems(productsData);
       setLoading(false);
     }, (error) => {
-      console.error(error);
+      console.error("Firestore Error:", error);
       setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
+  // Handlers
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (pin === '1234') {
@@ -425,7 +68,7 @@ export default function App() {
     try {
       await deleteDoc(doc(db, "products", id));
       setDeletingId(null);
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error("Delete Error:", err); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -450,19 +93,49 @@ export default function App() {
       }
       setFormData({ name: '', category: 'Yiros', price: '', ingredients: '', calories: '', prepTime: '', isDeal: false, isVegetarian: false });
       setEditingId(null);
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error("Submit Error:", err); }
   };
 
-  if (view === 'admin-login') return <AdminLogin pin={pin} setPin={setPin} handleLogin={handleLogin} authError={authError} setView={setView} />;
-  if (view === 'admin') return <AdminDashboard items={items} setView={setView} setIsAdmin={setIsAdmin} editingId={editingId} setEditingId={setEditingId} deletingId={deletingId} setDeletingId={setDeletingId} formData={formData} setFormData={setFormData} handleSubmit={handleSubmit} executeDelete={executeDelete} />;
+  // View Controller
+  if (view === 'admin-login') {
+    return (
+      <AdminLogin 
+        pin={pin} 
+        setPin={setPin} 
+        handleLogin={handleLogin} 
+        authError={authError} 
+        setView={setView} 
+      />
+    );
+  }
+
+  if (view === 'admin' && isAdmin) {
+    return (
+      <AdminDashboard 
+        items={items} 
+        setView={setView} 
+        setIsAdmin={setIsAdmin} 
+        editingId={editingId} 
+        setEditingId={setEditingId} 
+        deletingId={deletingId} 
+        setDeletingId={setDeletingId} 
+        formData={formData} 
+        setFormData={setFormData} 
+        handleSubmit={handleSubmit} 
+        executeDelete={executeDelete} 
+      />
+    );
+  }
   
-  return <MenuCustomerView 
-    items={items} 
-    loading={loading} 
-    searchQuery={searchQuery} 
-    setSearchQuery={setSearchQuery} 
-    activeCategory={activeCategory} 
-    setActiveCategory={setActiveCategory} 
-    setView={setView} 
-  />;
+  return (
+    <MenuCustomerView 
+      items={items} 
+      loading={loading} 
+      searchQuery={searchQuery} 
+      setSearchQuery={setSearchQuery} 
+      activeCategory={activeCategory} 
+      setActiveCategory={setActiveCategory} 
+      setView={setView} 
+    />
+  );
 }
