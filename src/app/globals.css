@@ -1,14 +1,15 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-@theme {
-  --font-serif: "Outfit", serif;
-  --font-sans: "Inter", sans-serif;
-  --color-primary: #004b87;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #fdfbf7;
   --foreground: #2c3e50;
+  --font-serif: 'Outfit', serif;
+  --font-sans: 'Inter', sans-serif;
 }
 
 @layer base {
@@ -16,6 +17,9 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
+  }
+  h1, h2, h3, h4, .font-serif {
+    font-family: var(--font-serif);
   }
 }
 
