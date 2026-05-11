@@ -14,19 +14,35 @@ import {
 } from 'firebase/firestore';
 
 const DEMO_DATA = [
-  { name: "Classic Chicken Yiros", category: "Yiros", price: 16.50, ingredients: "Marinated chicken breast, hot chips, fresh tzatziki, tomato, red onion, wrapped in warm fluffy pita.", calories: 750, prepTime: "5m", isDeal: false, isVegetarian: false },
-  { name: "Slow-Cooked Lamb", category: "Yiros", price: 18.90, ingredients: "Premium lamb shoulder roasted for 12 hours, chips, tzatziki, red onion, fresh parsley, sweet paprika.", calories: 820, prepTime: "7m", isDeal: false, isVegetarian: false },
-  { name: "The Athenian Mixed", category: "Yiros", price: 19.50, ingredients: "Best of both worlds: Chicken & lamb combo, chips, tzatziki, tomato, onion.", calories: 890, prepTime: "8m", isDeal: false, isVegetarian: false },
-  { name: "Crispy Haloumi", category: "Yiros", price: 16.90, ingredients: "Grilled Cypriot haloumi, chips, tzatziki, crisp lettuce, tomato, red onion.", calories: 680, prepTime: "5m", isDeal: false, isVegetarian: true },
-  { name: "Greek Loaded Fries", category: "Sides", price: 12.00, ingredients: "Crunchy golden fries topped with crumbled feta, oregano, and our signature garlic sauce.", calories: 620, prepTime: "5m", isDeal: false, isVegetarian: true },
-  { name: "Handmade Spanakopita", category: "Sides", price: 8.50, ingredients: "Traditional spinach, feta cheese, and fresh herbs baked in flaky golden filo pastry.", calories: 320, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Tzatziki & Pita Share", category: "Sides", price: 9.90, ingredients: "House-made garlic cucumber yogurt dip served with two warm, toasted pita breads.", calories: 450, prepTime: "2m", isDeal: false, isVegetarian: true },
-  { name: "The Brisbane Combo", category: "Deals", price: 21.00, ingredients: "Your choice of any classic Yiros + Small Greek Fries + Choice of Soft Drink.", calories: 1050, prepTime: "7m", isDeal: true, isVegetarian: false },
-  { name: "Baklava (2 Pieces)", category: "Desserts", price: 7.50, ingredients: "Layers of crisp filo pastry filled with chopped nuts and sweetened with fragrant honey syrup.", calories: 410, prepTime: "Ready", isDeal: false, isVegetarian: true },
-  { name: "Greek Frappé", category: "Drinks", price: 6.00, ingredients: "Traditional Greek iced coffee, whipped to perfection. Sweetened to your liking.", calories: 120, prepTime: "3m", isDeal: false, isVegetarian: true },
+  // Yiros
+  { name: "Classic Chicken Yiros", category: "Yiros", price: 18.90, ingredients: "Freshly marinated chicken, tzatziki sauce, tomato, onion, crunchy chips in grilled pita.", calories: 750, prepTime: "5m", isDeal: false, isVegetarian: false },
+  { name: "Slow-Cooked Lamb Yiros", category: "Yiros", price: 18.90, ingredients: "Freshly marinated lamb, tzatziki sauce, tomato, onion, crunchy chips in grilled pita.", calories: 820, prepTime: "7m", isDeal: false, isVegetarian: false },
+  { name: "The Mix Yiros", category: "Yiros", price: 18.90, ingredients: "Chicken & lamb combo, tzatziki sauce, tomato, onion, crunchy chips in grilled pita.", calories: 890, prepTime: "8m", isDeal: false, isVegetarian: false },
+  { name: "Grilled Haloumi Yiros", category: "Yiros", price: 18.90, ingredients: "Grilled haloumi, tzatziki, tomato, onion, crunchy chips in grilled pita.", calories: 680, prepTime: "5m", isDeal: false, isVegetarian: true },
+  
+  // Snack Packs
+  { name: "Traditional Snack Pack", category: "Snack Pack", price: 19.90, ingredients: "Your choice of roasted meats served over hot chips with melted cheese.", calories: 950, prepTime: "6m", isDeal: false, isVegetarian: false },
+  { name: "Meaty Pack", category: "Snack Pack", price: 19.90, ingredients: "Roasted meats, chips, fresh salad, selection of dips, and warm pita bread.", calories: 1100, prepTime: "8m", isDeal: false, isVegetarian: false },
+  { name: "Rice Bowl", category: "Snack Pack", price: 19.90, ingredients: "Fragrant Turkish rice topped with roasted meats, fresh salads, and pita.", calories: 850, prepTime: "7m", isDeal: false, isVegetarian: false },
+  { name: "Vegan Bowl", category: "Snack Pack", price: 19.90, ingredients: "Turkish rice, fresh garden salads, and house dressing.", calories: 520, prepTime: "5m", isDeal: false, isVegetarian: true },
+  { name: "Salad Box", category: "Snack Pack", price: 19.90, ingredients: "Fresh salads, grilled haloumi, dips, and warm pita bread.", calories: 580, prepTime: "6m", isDeal: false, isVegetarian: true },
+
+  // Pizzas
+  { name: "Meat Combo Pizza", category: "Pizza", price: 28.00, ingredients: "Lamb, chicken, capsicum, and onion on our signature base. (Slice: $7.90)", calories: 1200, prepTime: "12m", isDeal: false, isVegetarian: false },
+  { name: "BBQ Chicken Pizza", category: "Pizza", price: 28.00, ingredients: "Chicken, pineapple, capsicum, and BBQ sauce. (Slice: $7.90)", calories: 1150, prepTime: "12m", isDeal: false, isVegetarian: false },
+  { name: "Lamb & Garlic Pizza", category: "Pizza", price: 28.00, ingredients: "Marinated lamb, capsicum, onion, and fresh garlic. (Slice: $7.90)", calories: 1180, prepTime: "12m", isDeal: false, isVegetarian: false },
+  { name: "Margherita Pizza", category: "Pizza", price: 28.00, ingredients: "Garlic, tomato, fresh basil, and olive oil. (Slice: $7.90)", calories: 950, prepTime: "10m", isDeal: false, isVegetarian: true },
+  { name: "Vegetarian Pizza", category: "Pizza", price: 28.00, ingredients: "Spinach, mushroom, capsicum, and feta cheese. (Slice: $7.90)", calories: 980, prepTime: "12m", isDeal: false, isVegetarian: true },
+
+  // Sides & Sauces
+  { name: "Tzatziki Dip (Yoghurt Garlic)", category: "Sauces", price: 0.30, ingredients: "Traditional Greek yoghurt and garlic cucumber dip.", calories: 80, prepTime: "Ready", isDeal: false, isVegetarian: true },
+  { name: "Hummus Dip", category: "Sauces", price: 0.30, ingredients: "Creamy chickpeas, tahini, and lemon dip.", calories: 95, prepTime: "Ready", isDeal: false, isVegetarian: true },
+  { name: "Beetroot Hummus", category: "Sauces", price: 0.30, ingredients: "Roasted beetroot infused chickpea dip.", calories: 90, prepTime: "Ready", isDeal: false, isVegetarian: true },
+  { name: "Small Meal Upgrade", category: "Deals", price: 7.90, ingredients: "Add a Can/Water and Small Chips to any item.", calories: 450, prepTime: "2m", isDeal: true, isVegetarian: false },
+  { name: "Large Meal Upgrade", category: "Deals", price: 9.90, ingredients: "Add a Bottle/Water and Large Chips to any item.", calories: 650, prepTime: "2m", isDeal: true, isVegetarian: false },
 ];
 
-const CATEGORIES = ['All', 'Yiros', 'Sides', 'Deals', 'Desserts', 'Drinks'];
+const CATEGORIES = ['All', 'Yiros', 'Snack Pack', 'Pizza', 'Sides', 'Sauces', 'Deals', 'Desserts', 'Drinks'];
 
 // --- Sub-Components (Moved outside to fix focus bug) ---
 
