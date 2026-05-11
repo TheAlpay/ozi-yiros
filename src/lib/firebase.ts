@@ -13,9 +13,15 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+let app;
+try {
+  app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+} catch (error) {
+  console.error("Firebase initialization error:", error);
+}
+
+const auth = app ? getAuth(app) : null as any;
+const db = app ? getFirestore(app) : null as any;
+const storage = app ? getStorage(app) : null as any;
 
 export { auth, db, storage };

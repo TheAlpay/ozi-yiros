@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import styles from '../../new/ProductForm.module.css';
 import { db, auth, storage } from '@/lib/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -11,7 +11,8 @@ import Button from '@/components/ui/Button';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import Link from 'next/link';
 
-export default function EditProduct({ params }: { params: { id: string } }) {
+export default function EditProduct({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -36,11 +37,11 @@ export default function EditProduct({ params }: { params: { id: string } }) {
     });
     return () => unsubscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router, params.id]);
+  }, [router, id]);
 
   const fetchProduct = async () => {
     try {
-      const docRef = doc(db, "products", params.id);
+      const docRef = doc(db, "products", id);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
@@ -103,7 +104,7 @@ export default function EditProduct({ params }: { params: { id: string } }) {
         updatedAt: new Date()
       };
 
-      await updateDoc(doc(db, "products", params.id), productData);
+      await updateDoc(doc(db, "products", id), productData);
       router.push('/admin/dashboard');
     } catch (err) {
       console.error("Error updating product:", err);

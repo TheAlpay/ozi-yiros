@@ -21,9 +21,10 @@ const MOCK_PRODUCTS = [
   }
 ];
 
-export default function ProductPage({ params }: { params: { id: string } }) {
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   // In real app: fetch from Firestore
-  const product = MOCK_PRODUCTS.find(p => p.id === params.id) || MOCK_PRODUCTS[0];
+  const product = MOCK_PRODUCTS.find(p => p.id === id) || MOCK_PRODUCTS[0];
 
   return (
     <div className={`${styles.page} container animate-fade-in`}>
