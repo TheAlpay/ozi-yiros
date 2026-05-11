@@ -13,33 +13,57 @@ import MenuCustomerView from '@/components/MenuCustomerView';
 import AdminLogin from '@/components/AdminLogin';
 import AdminDashboard from '@/components/AdminDashboard';
 
+import { CATEGORIES, DEMO_DATA } from '@/lib/constants';
+
 export default function App() {
-  // Global State
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('menu'); 
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Auth State
   const [isAdmin, setIsAdmin] = useState(false);
   const [pin, setPin] = useState('');
   const [authError, setAuthError] = useState(false);
 
-  // Admin Form State
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '', category: 'Yiros', price: '', ingredients: '', calories: '', prepTime: '', isDeal: false, isVegetarian: false
   });
 
-  // Fetch Data from Firestore
-  useEffect(() => {
+  // Auto-seed function
+  const autoSeed = async () => {
     if (!db) return;
+    try {
+      console.log("Auto-seeding demo data...");
+      for (const item of DEMO_DATA) {
+        await addDoc(collection(db, "products"), {
+          ...item,
+          createdAt: serverTimestamp()
+        });
+      }
+    } catch (err) {
+      console.error("Auto-seed error:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!db) {
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // If DB is empty, trigger auto-seed
+      if (productsData.length === 0 && !loading) {
+        autoSeed();
+      }
+      
       setItems(productsData);
       setLoading(false);
     }, (error) => {
@@ -47,7 +71,7 @@ export default function App() {
       setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [db]);
 
   // Handlers
   const handleLogin = (e: React.FormEvent) => {
