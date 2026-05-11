@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/layout/Header";
 
 export const metadata: Metadata = {
-  title: "OZI YIROS | Best Greek Street Food in Brisbane",
-  description: "Authentic Greek Yiros, Souvlaki, and more. Check our full menu with nutritional information and ingredients.",
+  title: "OZI YIROS | Brisbane's Authentic Greek Street Food",
+  description: "Bespoke Greek Yiros, Souvlaki, and more in Brisbane.",
 };
 
 export default function RootLayout({
@@ -15,10 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Header />
-        <main>
-          {children}
-        </main>
+        {children}
       </body>
     </html>
   );
