@@ -335,9 +335,29 @@ export default function App() {
             <div className="w-8 h-8 bg-[#004B87] rounded flex items-center justify-center text-white font-serif font-bold">O</div>
             <span className="font-semibold text-lg text-slate-800">Menu Manager</span>
           </div>
-          <button onClick={() => {setIsAdmin(false); setView('menu');}} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition">
-            Sign Out <LogOut className="w-4 h-4" />
-          </button>
+          
+          <div className="flex items-center gap-6">
+            {items.length === 0 && (
+              <button 
+                onClick={async () => {
+                  if (!db) return;
+                  for (const item of DEMO_DATA) {
+                    await addDoc(collection(db, "products"), {
+                      ...item,
+                      id: undefined, // Let Firestore generate ID
+                      createdAt: serverTimestamp()
+                    });
+                  }
+                }}
+                className="text-xs font-medium bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-md border border-emerald-100 hover:bg-emerald-100 transition"
+              >
+                Seed Demo Data
+              </button>
+            )}
+            <button onClick={() => {setIsAdmin(false); setView('menu');}} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition">
+              Sign Out <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </header>
 
