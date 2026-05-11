@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { Search, X, Settings2, Leaf, Flame, Clock } from 'lucide-react';
 import { CATEGORIES } from '@/lib/constants';
 
@@ -88,28 +89,30 @@ const MenuCustomerView: React.FC<MenuCustomerViewProps> = ({
         ) : (
           <div className="space-y-10">
             {filteredItems.map((item: any) => (
-              <article key={item.id} className="group">
-                <div className="flex w-full items-baseline gap-3 mb-2">
-                  <h3 className="font-serif text-xl md:text-2xl text-slate-800 font-medium tracking-tight">{item.name}</h3>
-                  <div className="flex-grow border-b-2 border-dotted border-slate-300 opacity-60"></div>
-                  <span className="font-serif text-lg md:text-xl text-[#004B87]">${Number(item.price).toFixed(2)}</span>
-                </div>
-                <p className="text-slate-500 text-sm md:text-base leading-relaxed mb-3 font-light pr-8">{item.ingredients}</p>
-                <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
-                  {item.isDeal && (
-                    <span className="flex items-center gap-1 text-[#C2410C] bg-[#FFF5F1] px-2 py-1 rounded">
-                      <Flame className="w-3 h-3" /> Special Deal
-                    </span>
-                  )}
-                  {item.isVegetarian && (
-                    <span className="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-1 rounded">
-                      <Leaf className="w-3 h-3" /> V
-                    </span>
-                  )}
-                  {item.calories && <span className="text-slate-400">{item.calories} cal</span>}
-                  {item.prepTime && <span className="text-slate-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {item.prepTime}</span>}
-                </div>
-              </article>
+              <Link key={item.id} href={`/product/${item.id}`} className="block group cursor-pointer">
+                <article className="transition-transform group-hover:translate-x-1 duration-300">
+                  <div className="flex w-full items-baseline gap-3 mb-2">
+                    <h3 className="font-serif text-xl md:text-2xl text-slate-800 font-medium tracking-tight group-hover:text-[#004B87] transition-colors">{item.name}</h3>
+                    <div className="flex-grow border-b-2 border-dotted border-slate-300 opacity-60"></div>
+                    <span className="font-serif text-lg md:text-xl text-[#004B87]">${Number(item.price).toFixed(2)}</span>
+                  </div>
+                  <p className="text-slate-500 text-sm md:text-base leading-relaxed mb-3 font-light pr-8 line-clamp-2">{item.ingredients}</p>
+                  <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
+                    {item.isDeal && (
+                      <span className="flex items-center gap-1 text-[#C2410C] bg-[#FFF5F1] px-2 py-1 rounded">
+                        <Flame className="w-3 h-3" /> Special Deal
+                      </span>
+                    )}
+                    {item.isVegetarian && (
+                      <span className="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-1 rounded">
+                        <Leaf className="w-3 h-3" /> V
+                      </span>
+                    )}
+                    {item.calories && <span className="text-slate-400">{item.calories} cal</span>}
+                    {item.prepTime && <span className="text-slate-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {item.prepTime}</span>}
+                  </div>
+                </article>
+              </Link>
             ))}
           </div>
         )}
