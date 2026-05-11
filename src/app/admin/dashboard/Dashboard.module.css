@@ -1,0 +1,159 @@
+.page {
+  padding-top: 3rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 3rem;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: var(--text-muted);
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logoutBtn {
+  background: white;
+  border: 1px solid var(--border);
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.logoutBtn:hover {
+  color: var(--accent);
+  background: #fff5f5;
+  border-color: #feb2b2;
+}
+
+.tableWrapper {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  background: #f8fafc;
+  padding: 1rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+
+.table td {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.thumbnail {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.productName {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.price {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.badge {
+  background: #f1f5f9;
+  color: var(--text-muted);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.activeBadge {
+  background: #f0fdf4;
+  color: #16a34a;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.rowActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.editBtn, .deleteBtn {
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-muted);
+}
+
+.editBtn:hover {
+  background: #f0f9ff;
+  color: var(--primary);
+  border-color: #bae6fd;
+}
+
+.deleteBtn:hover {
+  background: #fff5f5;
+  color: var(--accent);
+  border-color: #feb2b2;
+}
+
+.empty {
+  text-align: center;
+  padding: 5rem 0;
+  color: var(--text-muted);
+}
+
+.emptyIcon {
+  margin-bottom: 1rem;
+  opacity: 0.2;
+}
+
+.loading {
+  height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--primary);
+}
