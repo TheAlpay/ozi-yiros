@@ -89,14 +89,14 @@ const MenuCustomerView = ({ items, loading, searchQuery, setSearchQuery, activeC
       </header>
 
       <div className="sticky top-0 bg-[#FDFBF7]/90 backdrop-blur-md z-30 py-4 border-b border-slate-200/50">
-        <div className="flex overflow-x-auto hide-scrollbar px-6 gap-3 max-w-3xl mx-auto items-center justify-start md:justify-center">
+        <div className="flex overflow-x-auto hide-scrollbar px-4 md:px-8 gap-4 max-w-4xl mx-auto items-center justify-start sm:justify-center">
           {CATEGORIES.map(cat => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`whitespace-nowrap px-5 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-medium transition-all ${
                 activeCategory === cat 
-                  ? 'bg-[#004B87] text-white shadow-sm' 
+                  ? 'bg-[#004B87] text-white shadow-md' 
                   : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
               }`}
             >
@@ -148,7 +148,7 @@ const MenuCustomerView = ({ items, loading, searchQuery, setSearchQuery, activeC
         <div className="max-w-md mx-auto px-6">
           <h4 className="font-serif text-xl text-[#004B87] mb-4">Ozi Yiros</h4>
           <div className="text-slate-500 font-light text-sm space-y-2">
-            <p>123 Queen Street, Brisbane QLD 4000</p>
+            <p>355 Samsonvale Rd, Warner QLD 4500</p>
             <p>Open Daily: 11:00 AM - 10:00 PM</p>
             <p className="pt-4 text-slate-300 text-xs">&copy; {new Date().getFullYear()} Ozi Yiros.</p>
           </div>
