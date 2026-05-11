@@ -1,42 +1,42 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db } from '@/lib/firebase';
-import { 
-  collection, onSnapshot, query, 
-  addDoc, deleteDoc, updateDoc, doc, 
-  serverTimestamp, orderBy 
+import {
+  collection, onSnapshot, query,
+  addDoc, deleteDoc, updateDoc, doc,
+  serverTimestamp, orderBy
 } from 'firebase/firestore';
 
-// Modular Components
 import MenuCustomerView from '@/components/MenuCustomerView';
 import AdminLogin from '@/components/AdminLogin';
 import AdminDashboard from '@/components/AdminDashboard';
 
-import { CATEGORIES, DEMO_DATA } from '@/lib/constants';
+import { DEMO_DATA } from '@/lib/constants';
+import { Product, ViewType, ProductFormData, EMPTY_FORM } from '@/lib/types';
+
+const ADMIN_PIN = process.env.NEXT_PUBLIC_ADMIN_PIN || '1234';
 
 export default function App() {
-  const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [view, setView] = useState('menu'); 
+  const [items, setItems] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(db !== null);
+  const [view, setView] = useState<ViewType>('menu');
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const [isAdmin, setIsAdmin] = useState(false);
   const [pin, setPin] = useState('');
   const [authError, setAuthError] = useState(false);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    name: '', category: 'Yiros', price: '', ingredients: '', calories: '', prepTime: '', isDeal: false, isVegetarian: false
-  });
+  const [formData, setFormData] = useState<ProductFormData>(EMPTY_FORM);
 
-  // Auto-seed function
+  const seedAttempted = useRef(false);
+
   const autoSeed = async () => {
     if (!db) return;
     try {
-      console.log("Auto-seeding demo data...");
       for (const item of DEMO_DATA) {
         await addDoc(collection(db, "products"), {
           ...item,
@@ -49,34 +49,30 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (!db) {
-      setLoading(false);
-      return;
-    }
-    
-    setLoading(true);
+    if (!db) return;
+
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      
-      // If DB is empty, trigger auto-seed
-      if (productsData.length === 0 && !loading) {
+      const productsData = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as Product[];
+
+      if (productsData.length === 0 && !seedAttempted.current) {
+        seedAttempted.current = true;
         autoSeed();
       }
-      
+
       setItems(productsData);
       setLoading(false);
     }, (error) => {
       console.error("Firestore Error:", error);
       setLoading(false);
     });
-    return () => unsubscribe();
-  }, [db]);
 
-  // Handlers
+    return () => unsubscribe();
+  }, []);
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin === '1234') {
+    if (pin === ADMIN_PIN) {
       setIsAdmin(true);
       setView('admin');
       setAuthError(false);
@@ -92,7 +88,9 @@ export default function App() {
     try {
       await deleteDoc(doc(db, "products", id));
       setDeletingId(null);
-    } catch (err) { console.error("Delete Error:", err); }
+    } catch (err) {
+      console.error("Delete Error:", err);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,9 +99,9 @@ export default function App() {
     const itemData = {
       name: formData.name.replace(/\b\w/g, l => l.toUpperCase()),
       category: formData.category,
-      price: parseFloat(formData.price as any),
+      price: parseFloat(formData.price),
       ingredients: formData.ingredients,
-      calories: parseInt(formData.calories as any) || 0,
+      calories: parseInt(formData.calories) || 0,
       prepTime: formData.prepTime,
       isDeal: formData.isDeal,
       isVegetarian: formData.isVegetarian,
@@ -115,51 +113,52 @@ export default function App() {
       } else {
         await addDoc(collection(db, "products"), { ...itemData, createdAt: serverTimestamp() });
       }
-      setFormData({ name: '', category: 'Yiros', price: '', ingredients: '', calories: '', prepTime: '', isDeal: false, isVegetarian: false });
+      setFormData(EMPTY_FORM);
       setEditingId(null);
-    } catch (err) { console.error("Submit Error:", err); }
+    } catch (err) {
+      console.error("Submit Error:", err);
+    }
   };
 
-  // View Controller
   if (view === 'admin-login') {
     return (
-      <AdminLogin 
-        pin={pin} 
-        setPin={setPin} 
-        handleLogin={handleLogin} 
-        authError={authError} 
-        setView={setView} 
+      <AdminLogin
+        pin={pin}
+        setPin={setPin}
+        handleLogin={handleLogin}
+        authError={authError}
+        setView={setView}
       />
     );
   }
 
   if (view === 'admin' && isAdmin) {
     return (
-      <AdminDashboard 
-        items={items} 
-        setView={setView} 
-        setIsAdmin={setIsAdmin} 
-        editingId={editingId} 
-        setEditingId={setEditingId} 
-        deletingId={deletingId} 
-        setDeletingId={setDeletingId} 
-        formData={formData} 
-        setFormData={setFormData} 
-        handleSubmit={handleSubmit} 
-        executeDelete={executeDelete} 
+      <AdminDashboard
+        items={items}
+        setView={setView}
+        setIsAdmin={setIsAdmin}
+        editingId={editingId}
+        setEditingId={setEditingId}
+        deletingId={deletingId}
+        setDeletingId={setDeletingId}
+        formData={formData}
+        setFormData={setFormData}
+        handleSubmit={handleSubmit}
+        executeDelete={executeDelete}
       />
     );
   }
-  
+
   return (
-    <MenuCustomerView 
-      items={items} 
-      loading={loading} 
-      searchQuery={searchQuery} 
-      setSearchQuery={setSearchQuery} 
-      activeCategory={activeCategory} 
-      setActiveCategory={setActiveCategory} 
-      setView={setView} 
+    <MenuCustomerView
+      items={items}
+      loading={loading}
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
+      activeCategory={activeCategory}
+      setActiveCategory={setActiveCategory}
+      setView={setView}
     />
   );
 }
