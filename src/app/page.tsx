@@ -6,6 +6,12 @@ import {
   Settings2, LogOut, Check, ChevronLeft, 
   Info, Leaf, Flame, Clock
 } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { 
+  collection, onSnapshot, query, 
+  addDoc, deleteDoc, updateDoc, doc, 
+  serverTimestamp, orderBy 
+} from 'firebase/firestore';
 
 const DEMO_DATA = [
   { id: '1', name: "Classic Chicken Yiros", category: "Yiros", price: 16.50, ingredients: "Marinated chicken breast, hot chips, fresh tzatziki, tomato, red onion, wrapped in warm fluffy pita.", calories: 750, prepTime: "5m", isDeal: false, isVegetarian: false },
@@ -42,25 +48,31 @@ export default function App() {
   const categories = ['All', 'Yiros', 'Sides', 'Deals', 'Desserts', 'Drinks'];
 
   useEffect(() => {
+    if (!db) return; // Prevent crashes if Firebase not initialized
+
     setLoading(true);
-    // Simulating network request for organic feel
-    const timer = setTimeout(() => {
-      const savedItems = localStorage.getItem('ozi-yiros-organic-db');
-      if (savedItems) {
-        setItems(JSON.parse(savedItems));
+    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (snapshot.empty && items.length === 0) {
+        // If Firestore is empty, we could seed it or just show empty
+        // For now, let's just use what's there
+        setItems([]);
       } else {
-        setItems(DEMO_DATA);
-        localStorage.setItem('ozi-yiros-organic-db', JSON.stringify(DEMO_DATA));
+        const productsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setItems(productsData);
       }
       setLoading(false);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, []);
+    }, (error) => {
+      console.error("Firestore error:", error);
+      setLoading(false);
+    });
 
-  const saveDB = (newItems: any[]) => {
-    localStorage.setItem('ozi-yiros-organic-db', JSON.stringify(newItems));
-    setItems(newItems);
-  };
+    return () => unsubscribe();
+  }, [db]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,35 +87,60 @@ export default function App() {
     }
   };
 
-  const executeDelete = (id: string) => {
-    const newItems = items.filter(item => item.id !== id);
-    saveDB(newItems);
-    setDeletingId(null);
+  const executeDelete = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "products", id));
+      setDeletingId(null);
+    } catch (err) {
+      console.error("Error deleting:", err);
+    }
   };
 
   const handleEdit = (item: any) => {
     setEditingId(item.id);
-    setFormData(item);
+    setFormData({
+      name: item.name,
+      category: item.category,
+      price: item.price.toString(),
+      ingredients: item.ingredients,
+      calories: item.calories.toString(),
+      prepTime: item.prepTime,
+      isDeal: item.isDeal,
+      isVegetarian: item.isVegetarian
+    });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const itemData = {
-      ...formData,
-      // Humanize data: Capitalize first letter of each word instead of all caps
       name: formData.name.replace(/\b\w/g, l => l.toUpperCase()),
+      category: formData.category,
       price: parseFloat(formData.price as any),
+      ingredients: formData.ingredients,
+      calories: parseInt(formData.calories as any) || 0,
+      prepTime: formData.prepTime,
+      isDeal: formData.isDeal,
+      isVegetarian: formData.isVegetarian,
+      updatedAt: serverTimestamp()
     };
 
-    if (editingId) {
-      saveDB(items.map(item => item.id === editingId ? { ...itemData, id: editingId } : item));
-    } else {
-      saveDB([{ ...itemData, id: `item-${Date.now()}` }, ...items]);
-    }
+    try {
+      if (editingId) {
+        await updateDoc(doc(db, "products", editingId), itemData);
+      } else {
+        await addDoc(collection(db, "products"), {
+          ...itemData,
+          createdAt: serverTimestamp()
+        });
+      }
 
-    setFormData({ name: '', category: 'Yiros', price: '', ingredients: '', calories: '', prepTime: '', isDeal: false, isVegetarian: false });
-    setEditingId(null);
+      setFormData({ name: '', category: 'Yiros', price: '', ingredients: '', calories: '', prepTime: '', isDeal: false, isVegetarian: false });
+      setEditingId(null);
+    } catch (err) {
+      console.error("Error saving:", err);
+      alert("Error saving to Firestore. Make sure your environment variables are set on Vercel.");
+    }
   };
 
   const filteredItems = items.filter(item => {
