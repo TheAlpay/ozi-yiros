@@ -88,6 +88,7 @@ export default function App() {
   };
 
   const executeDelete = async (id: string) => {
+    if (!db) return;
     try {
       await deleteDoc(doc(db, "products", id));
       setDeletingId(null);
@@ -113,6 +114,11 @@ export default function App() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!db) {
+      alert("Firebase configuration missing. Please add your environment variables to Vercel.");
+      return;
+    }
+
     const itemData = {
       name: formData.name.replace(/\b\w/g, l => l.toUpperCase()),
       category: formData.category,
@@ -127,9 +133,9 @@ export default function App() {
 
     try {
       if (editingId) {
-        await updateDoc(doc(db, "products", editingId), itemData);
+        await updateDoc(doc(db as any, "products", editingId), itemData);
       } else {
-        await addDoc(collection(db, "products"), {
+        await addDoc(collection(db as any, "products"), {
           ...itemData,
           createdAt: serverTimestamp()
         });
@@ -139,7 +145,6 @@ export default function App() {
       setEditingId(null);
     } catch (err) {
       console.error("Error saving:", err);
-      alert("Error saving to Firestore. Make sure your environment variables are set on Vercel.");
     }
   };
 

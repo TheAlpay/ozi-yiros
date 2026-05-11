@@ -24,8 +24,8 @@ if (isValidConfig) {
   }
 }
 
-const auth = app ? getAuth(app) : {} as any;
-const db = app ? getFirestore(app) : {} as any;
-const storage = app ? getStorage(app) : {} as any;
+const auth = app ? getAuth(app) : null;
+const db = app ? getFirestore(app) : null;
+const storage = app ? getStorage(app) : null;
 
 export { auth, db, storage };
