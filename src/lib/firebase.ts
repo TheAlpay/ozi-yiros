@@ -14,14 +14,18 @@ const firebaseConfig = {
 
 // Initialize Firebase
 let app;
-try {
-  app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-} catch (error) {
-  console.error("Firebase initialization error:", error);
+const isValidConfig = firebaseConfig.apiKey && firebaseConfig.apiKey !== 'your_api_key';
+
+if (isValidConfig) {
+  try {
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+  } catch (error) {
+    console.error("Firebase initialization error:", error);
+  }
 }
 
-const auth = app ? getAuth(app) : null as any;
-const db = app ? getFirestore(app) : null as any;
-const storage = app ? getStorage(app) : null as any;
+const auth = app ? getAuth(app) : {} as any;
+const db = app ? getFirestore(app) : {} as any;
+const storage = app ? getStorage(app) : {} as any;
 
 export { auth, db, storage };
